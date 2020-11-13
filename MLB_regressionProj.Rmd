@@ -1,0 +1,241 @@
+---
+title: "MLB linear Regression"
+subtitle: "Linear Regression of MLB salaries in correlation to various features"
+author: "Pranav Thaenraj"
+output: html_notebook
+---
+# Introduction
+
+This dataset is a random sample of 353 records from the MLB that provides the salary, years of experience, batting average,avg games per year, home runs per year, and runs batted in a year
+
+The features given in this dataset naturally fall in two categories, they are either indicators of experience (years of experience, career batting average) or they are indicators of performance (avg games per year, home runs per year, runs batted in a year). In this project I will first use linear regression models for single features against salary in an attempt to find the best feature to predict the salary of a player in the MLB. After this I will use multiple regressions models to see if features that indicate experience or those that indicate performance or the combination of all features provides the best model for predicting salaries
+
+```{r}
+# Loading data 
+mlb = read.csv("mlb.csv")
+head(mlb)
+```
+```{r}
+#Initial Exploratory Analysis
+mlb_df <- as.data.frame(mlb)
+#DataFrame with 6 columns and 353 records
+class(mlb_df)
+dim(mlb_df)
+
+#Summary statistics for all columns of mlb_df
+summary(mlb_df)
+
+```
+
+```{r}
+#removing null values (data clean)
+mlb_df = na.omit(mlb_df)
+dim(mlb_df)
+
+```
+# Visual data Analysis
+
+```{r}
+#Visual Statistics
+boxplot(mlb_df$salary)
+```
+```{r}
+hist(mlb_df$salary)
+```
+The histogram of the salaries of the MLB players in this dataset is shown to be skewed to the right. The Box plot shows that there are a few outliers which seems to contribute to the skewed nature of the dataset
+
+```{r}
+boxplot(mlb_df$years)
+```
+```{r}
+hist(mlb_df$years)
+```
+The Histogram of the number of years a player has played is skewed slightly to the right this is can be associated with the number of outliers in the dataset, which can be seen in the boxplot
+
+```{r}
+boxplot(mlb_df$bavg)
+```
+```{r}
+hist(mlb_df$bavg)
+```
+The Batting average of the players in this dataset is more or less normally distributed. This may be attributed to the large number of outliers on both ends of the boxplot 
+
+```{r}
+boxplot(mlb_df$gamesyr)
+```
+```{r}
+hist(mlb_df$gamesyr)
+```
+The histogram of games per year is slightly skewed to the left 
+
+```{r}
+boxplot(mlb_df$hrnsyr)
+```
+```{r}
+hist(mlb_df$hrnsyr)
+```
+The histogram of homeruns per year is heavily skewed to the right indicatng that most players tended to score a low number of home runs per year 
+
+```{r}
+boxplot(mlb_df$rbisyr)
+```
+```{r}
+hist(mlb_df$rbisyr)
+```
+The Histogram of runs batted in a year is skewed to the right indicating that most players tended to not score runs in the higher range of runs 
+
+# Single Variable Least Squares Regressions 
+
+```{r}
+#plotting salary and years and finding regressin line 
+y = mlb_df$salary
+x = mlb_df$years
+plot(x,y, main = "salary vs. years of experience")
+reg_line <- lm(y~x)
+abline( 248601,173429)
+#Residual plot of regression model
+plot(reg_line$residuals, main ="Residual Plot")
+abline(h=0, col = "red")
+
+summary(reg_line)
+```
+A linear regression model that models salary over years of experience. The equation of this particular model is:
+
+Salary = 248601 + 173429(years of experience)
+
+The residual plot for this regression line shows that most values with a low residual are beneath the predicted value and the values with the high residual tend to be farther off from the predicted values
+
+The residual standard error for this model is: 1238000 
+
+```{r}
+#Plotting Salary and Batting Average
+y = mlb_df$salary
+x = mlb_df$bavg
+plot(x,y, main = "salary vs. batting average")
+reg_line <- lm(y~x)
+#reg_line
+abline(-1328495,10326)
+#Residual plot of regression model
+plot(reg_line$residuals, main ="Residual Plot")
+abline(h=0, col = "red")
+
+summary(reg_line)
+```
+A linear regression model that models salary over batting average. The equation of this particular model is:
+
+Salary = -1328495 + 10326(batting average)
+
+While the residual plot of this particular regression model shows that this prediction is not a bad one the scatter plot shows that the data tends to stop at a certain point and that extrapolating the data based on the regression line past this point may not be effective 
+
+The residual standard error for this model is: 1352000 
+```{r}
+#Plotting Salary and gamesyr
+y = (mlb_df$salary) 
+x = (mlb_df$gamesyr)
+plot(x,y, main = "salary vs. gamesyr")
+reg_line <- lm(y~x)
+#reg_line
+abline(-869718, 24595)
+#Residual plot of regression model
+plot(reg_line$residuals, main ="Residual Plot")
+abline(h=0, col = "red")
+
+summary(reg_line)
+```
+A linear regression model that models salary over games for year. The equation of this particular model is:
+
+Salary = -869718 + 24595(games for year)
+
+While this plot is seemingly nonlinear the regression line is seeminly efficient in serving as a predictor of salary based on the results from the residual plot
+
+The residual standard error for this model is: 1093000
+
+```{r}
+#Plotting Salary and gamesyr
+y = mlb_df$salary
+x = mlb_df$rbisyr
+plot(x,y, main = "salary vs. rbisyr")
+reg_line <- lm(y~x)
+abline( -183078, 43616)
+#Residual plot of regression model
+plot(reg_line$residuals, main ="Residual Plot")
+abline(h=0, col = "red")
+
+summary(reg_line)
+```
+A linear regression model that models salary over rbisyr. The equation of this particular model is:
+
+Salary = -183078 + 43616(rbisyr)
+
+The residual plot for this particular model shows that it is an excellent predictor of salary.
+
+The residual standard error for this model is: 996000, indicating that the model is better than all others so far as a predictor of salary
+
+# Multiple Regressions models
+
+Since the regression lines from all previous regression models dont seem to provide the best prediction of a player's salary, it only becomes logical to assume that there are multiple features involved in the prediction of a players salary. Thus I ran a multiple regression model to attempt to predict the salary of a baseball player based on all five features. This multiple regression line served as a much better prediction and the error between the predicted and actual values is greatly reduced
+
+```{r}
+#multiple regression model
+y = mlb_df$salary
+x1 = mlb_df$years
+x2 = mlb_df$bavg
+x3 = mlb_df$gamesyr
+x4 = mlb_df$hrnsyr
+x5 = mlb_df$rbisyr
+fit <- lm(y~x1+x2+x3+x4+x5, data = mlb_df)
+summary(fit)
+plot(fit$residuals, main = "Residual Plot")
+abline(h=0, col = "red")
+```
+The Equation of this multiple regression model is:
+
+salary = -934893 + yearsofExp(60629) + BattingAvg(2030) + gamesPerYear(2254) + homerunsPerYear(17892) + runsBattedYearly(29700)
+
+Of all regression models made so far this particular model has a low Residual Standard Error: 974900
+
+The dataset that is provided has more intricacies than just the presence of these features. The dataset has two features: the years of experience and the batting average that are indicative of the player's experience and three features: the games per year, the home runs per year, and the runs batted yearly that shows the experience of a player. Thus it may be worth analyzing if a regression model using features that are indicative of player experience is more accurate than one that uses features that are indicative of player performance in predicting player salary 
+
+```{r}
+#multiple regression model using player experience features only
+y = mlb_df$salary
+x1 = mlb_df$years
+x2 = mlb_df$bavg
+  
+fit <- lm(y~x1+x2, data = mlb_df)
+summary(fit)
+plot(fit$residuals, main = "Residual Plot")
+abline(h=0, col = "red")
+```
+The multiple regression model that considers only features that relate to player experience seems to not be a very good prediction at first glance of the residual plot. Most points on the residual plot are underneath the abline, meaning that the predicted value of the majority of values in the model is greater than their actual values. this is an indication of a large number of outliers in the data of players' years of experience and career batting average. The residual plot is indicative of the experience not being the best predictor of salary
+
+The equation of this multiple regressions model is:
+
+salary = -1514380 + yearsofExp(159463) + BattingAvg(7148)
+
+The residual standard error for this model is: 1210000, a value that is much higher than that of the model that utilized all features to predict salary, Thus indicating that the usage of mere features indicative of experience may not be the best way to predict a player's salary and that the player's performance is an important component in predicting the players salary
+
+```{r}
+#multiple regression model using player performance features only
+y = mlb_df$salary
+x1 = mlb_df$gamesyr
+x2 = mlb_df$hrnsyr
+x3 = mlb_df$rbisyr
+
+fit <- lm(y~x1+x2+x3, data = mlb_df)
+summary(fit)
+plot(fit$residuals, main = "Residual Plot")
+abline(h=0, col = "red")
+```
+
+The residual plot for the multiple regressions model using features that indicate performance shows that the model fits the data well. The data points are evenly spread above and below the abline. This is indicative of the fact that the performance of a player is influential in the determination of the player's salary.
+
+The equation of this multiple regressions model is:
+
+salary = -400680 + gamesPerYear(5897) + homerunsPerYear(16518) + runsBattedYearly(31314)
+
+The residual standard error for this model is: 994600, a value that is higher than that of the model that utilized all features but lower than that of the model that utilized only features that indicated player experience.
+
+# Conclusion
+
+Thus through the analysis of all three of these multiple regression models and their respective residual standard errors one can deem that while a player's performance is more important in the prediction of their salary, the experience that a player has is also an important feature to consider. This can be corroborated by thinking of players that are currently in the MLB. A player with very strong performance statistics early in his career has the potential to earn a high salary, but a player with the same statistics and a larger amount of experience is logically bound to make more money because this player not only has shown consistency throughout their career with their good performance, but has potentially been on a particular team for a very long time and is a favorite of the fans of said team. Thus in conclusion, one can deem that the best predictor of a players salary comes from the analysis of both the player's statistics that are in regard to their experience as well as their performance   
